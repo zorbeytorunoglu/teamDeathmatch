@@ -1,0 +1,35 @@
+name: TeamDeathmatch
+version: 1.0.0
+api-version: 1.13
+author: thelegend
+website: zorbeytorunoglu.com
+main: com.zorbeytorunoglu.tdm.TDM
+depend:
+  - kLib
+commands:
+  tdm:
+    description: Main command
+    aliases:
+      - teamdeathmatch
+permissions:
+  tdm.create:
+    description: Permission to create arena.
+    default: op
+  tdm.setspawn:
+    description: Permission to set the spawn location.
+    default: op
+  tdm.save:
+    description: Permission to save a map.
+    default: op
+  tdm.setup:
+    description: Permission to see what is setup for an arena.
+    default: op
+  tdm.set:
+    description: Permission to setup an arena.
+    default: op
+  tdm.tp:
+    description: Permission to teleport to maps.
+    default: op
+  tdm.arenas:
+    description: Permission to see the arenas.
+    default: op
