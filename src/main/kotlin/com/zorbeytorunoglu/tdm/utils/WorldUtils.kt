@@ -1,51 +1,12 @@
 package com.zorbeytorunoglu.tdm.utils
 
-import com.sk89q.worldedit.WorldEdit
-import com.sk89q.worldedit.WorldEditException
-import com.sk89q.worldedit.bukkit.BukkitAdapter
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats
-import com.sk89q.worldedit.function.operation.Operations
-import com.sk89q.worldedit.math.BlockVector3
-import com.sk89q.worldedit.session.ClipboardHolder
 import org.bukkit.Bukkit
 import org.bukkit.GameRule
-import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.block.Biome
 import org.bukkit.generator.ChunkGenerator
-import java.io.File
-import java.io.FileInputStream
-
 
 object WorldUtils {
-
-    fun paste(location: Location, file: File) {
-
-        val cFormat = ClipboardFormats.findByFile(file)
-
-        val reader = cFormat!!.getReader(FileInputStream(file))
-
-        val clipboard = reader.read()
-
-        try {
-            val world = BukkitAdapter.adapt(location.world)
-            val editSession = WorldEdit.getInstance().newEditSession(world)
-
-            val operation = ClipboardHolder(clipboard).createPaste(editSession)
-                .to(BlockVector3.at(location.x,location.y,location.z)).ignoreAirBlocks(true).build()
-
-            try {
-                Operations.complete(operation)
-                editSession.close()
-            } catch (e: WorldEditException) {
-                e.printStackTrace()
-            }
-
-        } catch (e: WorldEditException) {
-            e.printStackTrace()
-        }
-
-    }
 
     fun getChunkGenerator(): ChunkGenerator {
         return object : ChunkGenerator() {
