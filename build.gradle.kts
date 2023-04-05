@@ -13,8 +13,6 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
-    maven { url = uri("https://maven.enginehub.org/repo/") }
 }
 
 dependencies {
@@ -26,14 +24,6 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:1.8.10")
 
     compileOnly("org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT")
-
-    implementation(platform("com.intellectualsites.bom:bom-1.18.x:1.25"))
-
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
-
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
-
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.14")
 
 }
 
