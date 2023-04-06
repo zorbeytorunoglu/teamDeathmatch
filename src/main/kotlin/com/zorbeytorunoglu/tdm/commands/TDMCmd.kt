@@ -536,6 +536,9 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
                         ArenaStatus.RELOADING -> {
                             sender.sendMessage(message.replace("%status%", plugin.messages.perArenaReloading))
                         }
+                        ArenaStatus.CLOSED -> {
+                            sender.sendMessage(message.replace("%status%", plugin.messages.perArenaClosed))
+                        }
                     }
 
                 }
@@ -619,6 +622,60 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             sender.sendMessage(plugin.messages.mapDeleted)
 
             return true
+
+        }
+
+        if (args[0] == "close") {
+
+            if (!hasPermission(sender, "tdm.close")) return false
+
+            if (args.size != 2) {
+                sender.sendMessage(plugin.messages.closeUsage)
+                return false
+            }
+
+            if (!arenaExists(sender, args[1])) return false
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+            if (!plugin.arenaManager.gameMapExists(arena)) {
+                sender.sendMessage(plugin.messages.arenaNotSetup.replace("%map%", arena.name))
+                return false
+            }
+
+            val status = plugin.arenaManager.getGameMap(arena).status
+
+            if (status == ArenaStatus.CLOSED) {
+                sender.sendMessage(plugin.messages.alreadyClosed)
+                return false
+            }
+
+            plugin.arenaManager.gameMaps[arena]!!.status = ArenaStatus.CLOSED
+
+            sender.sendMessage(plugin.messages.arenaClosed.replace("%map%", arena.name))
+
+            return true
+
+        }
+
+        if (args[0] == "join") {
+
+            if (!isPlayer(sender)) return false
+
+            if (!hasPermission(sender, "tdm.join")) return false
+
+            if (args.size != 2) {
+                sender.sendMessage(plugin.messages.joinUsage)
+                return false
+            }
+
+            if (!arenaExists(sender, args[1])) return false
+
+            val player = sender as Player
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+
 
         }
 

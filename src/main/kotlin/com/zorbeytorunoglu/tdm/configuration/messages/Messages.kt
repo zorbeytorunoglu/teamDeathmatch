@@ -66,5 +66,11 @@ class Messages(config: Resource) {
     val arenaBusy = config.getString("arena-busy")!!.colorHex
     val deleteUsage = config.getString("delete-usage")!!.colorHex
     val mapDeleted = config.getString("map-deleted")!!.colorHex
+    val joinUsage = config.getString("join-usage")!!.colorHex
+    val arenaClosed = config.getString("arena-closed")!!.colorHex
+    val perArenaClosed = config.getString("per-arena-closed")!!.colorHex
+    val canNotJoin = config.getString("can-not-join")!!.colorHex
+    val closeUsage = config.getString("close-usage")!!.colorHex
+    val alreadyClosed = config.getString("already-closed")!!.colorHex
 
 }

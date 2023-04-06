@@ -116,7 +116,8 @@ class ArenaManager(val plugin: TDM) {
 
     fun arenaBusy(arena: Arena): Boolean {
         if (!gameMapExists(arena)) return false
-        return getGameMap(arena).status == ArenaStatus.IN_GAME || getGameMap(arena).status == ArenaStatus.RELOADING
+        return getGameMap(arena).status == ArenaStatus.IN_GAME || getGameMap(arena).status == ArenaStatus.RELOADING ||
+                getGameMap(arena).status == ArenaStatus.CLOSED
     }
 
     fun loadArenas() {
