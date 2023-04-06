@@ -45,6 +45,15 @@ class WorldManager(val plugin: TDM) {
         if (removeFile) deleteFile(target)
     }
 
+    fun deleteFromMaps(name: String) {
+
+        val dataDirectory = File(plugin.dataFolder, "maps")
+        val target = File(dataDirectory, name)
+
+        deleteFile(target)
+
+    }
+
     fun deleteFile(path: File) {
         if (path.exists()) {
             val files = path.listFiles()
@@ -104,8 +113,10 @@ class WorldManager(val plugin: TDM) {
     fun unloadWorld(pWorld: String, save: Boolean) {
         val world: World? = plugin.server.getWorld(pWorld)
         if (world != null) {
-            for (p in world.players) {
-                p.teleport(plugin.spawn!!)
+            if (world.players.isNotEmpty()) {
+                for (p in world.players) {
+                    p.teleport(plugin.spawn!!)
+                }
             }
             plugin.server.unloadWorld(world, save)
         }

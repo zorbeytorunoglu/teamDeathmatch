@@ -564,25 +564,61 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
                 val status = plugin.arenaManager.getGameMap(arena).status
 
                 if (status == ArenaStatus.IN_GAME) {
-                    sender.sendMessage(plugin.messages.refreshInGame)
+                    sender.sendMessage(plugin.messages.refreshInGame.replace("%map%", arena.name))
                     return false
                 } else if (status == ArenaStatus.RELOADING) {
-                    sender.sendMessage(plugin.messages.refreshAlready)
+                    sender.sendMessage(plugin.messages.refreshAlready.replace("%map%", arena.name))
                     return false
                 } else {
 
-                    sender.sendMessage(plugin.messages.refreshing)
+                    sender.sendMessage(plugin.messages.refreshing.replace("%map%", arena.name))
                     return if (plugin.worldManager.loadWorldFromMaps(arena.name)) {
-                        sender.sendMessage(plugin.messages.refreshed)
+                        sender.sendMessage(plugin.messages.refreshed.replace("%map%", arena.name))
                         true
                     } else {
-                        sender.sendMessage(plugin.messages.notRefreshed)
+                        sender.sendMessage(plugin.messages.notRefreshed.replace("%map%", arena.name))
                         false
                     }
 
                 }
 
             }
+
+        }
+
+        if (args[0] == "delete") {
+
+            if (!hasPermission(sender, "tdm.delete")) return false
+
+            if (args.size != 2) {
+                sender.sendMessage(plugin.messages.deleteUsage)
+                return false
+            }
+
+            if (!arenaExists(sender, args[1])) return false
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+            plugin.worldManager.deleteWorld(arena.name, true)
+            plugin.worldManager.deleteFromMaps(arena.name)
+
+            if (plugin.arenaManager.arenaResources.containsKey(arena)) {
+
+                plugin.worldManager.deleteFile(plugin.arenaManager.arenaResources[arena]!!.file)
+                plugin.arenaManager.arenaResources.remove(arena)
+
+            }
+
+            sender.sendMessage(plugin.messages.mapDeleted.replace("%map%", arena.name))
+
+            if (plugin.arenaManager.gameMapExists(arena)) {
+                plugin.arenaManager.gameMaps.remove(arena)
+            }
+            plugin.arenaManager.arenas.remove(arena.name)
+
+            sender.sendMessage(plugin.messages.mapDeleted)
+
+            return true
 
         }
 

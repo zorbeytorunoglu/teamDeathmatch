@@ -63,5 +63,8 @@ class Messages(config: Resource) {
     val refreshing = config.getString("refreshing")!!.colorHex
     val refreshed = config.getString("refreshed")!!.colorHex
     val notRefreshed = config.getString("not-refreshed")!!.colorHex
+    val arenaBusy = config.getString("arena-busy")!!.colorHex
+    val deleteUsage = config.getString("delete-usage")!!.colorHex
+    val mapDeleted = config.getString("map-deleted")!!.colorHex
 
 }

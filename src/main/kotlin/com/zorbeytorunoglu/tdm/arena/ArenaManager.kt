@@ -86,6 +86,9 @@ class ArenaManager(val plugin: TDM) {
         }
 
         resource.save()
+
+        arenaResources[arena] = resource
+
         return resource
 
     }
@@ -109,6 +112,11 @@ class ArenaManager(val plugin: TDM) {
 
         }
 
+    }
+
+    fun arenaBusy(arena: Arena): Boolean {
+        if (!gameMapExists(arena)) return false
+        return getGameMap(arena).status == ArenaStatus.IN_GAME || getGameMap(arena).status == ArenaStatus.RELOADING
     }
 
     fun loadArenas() {
@@ -158,6 +166,8 @@ class ArenaManager(val plugin: TDM) {
                         if (!isValidMapConfig(resource)) return@suspendFunctionAsync
 
                         val arena = plugin.arenaManager.getArena(resource.getString("name")!!)
+
+                        arenaResources[arena] = resource
 
                         arena.displayName = resource.getString("displayname")!!
                         arena.redSpawn = resource.getLocation("redSpawn")
