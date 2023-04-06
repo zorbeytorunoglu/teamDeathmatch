@@ -2,6 +2,7 @@ package com.zorbeytorunoglu.tdm.commands
 
 import com.zorbeytorunoglu.kLib.extensions.isAlphanumeric
 import com.zorbeytorunoglu.kLib.extensions.isIntegerNumber
+import com.zorbeytorunoglu.kLib.task.Scopes
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.arena.Arena
 import com.zorbeytorunoglu.tdm.arena.ArenaStatus
@@ -548,6 +549,40 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
         if (args[0] == "refresh") {
 
             if (!hasPermission(sender, "tdm.refresh")) return false
+
+            if (args.size != 2) {
+                sender.sendMessage(plugin.messages.refreshUsage)
+                return false
+            }
+
+            if (!arenaExists(sender, args[1])) return false
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+            if (plugin.arenaManager.gameMapExists(arena)) {
+
+                val status = plugin.arenaManager.getGameMap(arena).status
+
+                if (status == ArenaStatus.IN_GAME) {
+                    sender.sendMessage(plugin.messages.refreshInGame)
+                    return false
+                } else if (status == ArenaStatus.RELOADING) {
+                    sender.sendMessage(plugin.messages.refreshAlready)
+                    return false
+                } else {
+
+                    sender.sendMessage(plugin.messages.refreshing)
+                    return if (plugin.worldManager.loadWorldFromMaps(arena.name)) {
+                        sender.sendMessage(plugin.messages.refreshed)
+                        true
+                    } else {
+                        sender.sendMessage(plugin.messages.notRefreshed)
+                        false
+                    }
+
+                }
+
+            }
 
         }
 

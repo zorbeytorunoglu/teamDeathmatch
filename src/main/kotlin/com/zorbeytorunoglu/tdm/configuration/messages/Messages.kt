@@ -57,5 +57,11 @@ class Messages(config: Resource) {
     val perArenaInGame = config.getString("per-arena-in-game")!!.colorHex
     val perArenaReloading = config.getString("per-arena-reloading")!!.colorHex
     val noArenaFound = config.getString("no-arena-found")!!.colorHex
+    val refreshUsage = config.getString("refresh-usage")!!.colorHex
+    val refreshInGame = config.getString("refresh-in-game")!!.colorHex
+    val refreshAlready = config.getString("refresh-already")!!.colorHex
+    val refreshing = config.getString("refreshing")!!.colorHex
+    val refreshed = config.getString("refreshed")!!.colorHex
+    val notRefreshed = config.getString("not-refreshed")!!.colorHex
 
 }
