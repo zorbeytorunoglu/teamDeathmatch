@@ -52,5 +52,10 @@ class Messages(config: Resource) {
     val arenas = config.getString("arenas")!!.colorHex
     val perArena = config.getString("per-arena")!!.colorHex
     val arenaNotSetup = config.getString("arena-not-setup")!!.colorHex
+    val perArenaNoSetup = config.getString("per-arena-no-setup")!!.colorHex
+    val perArenaReady = config.getString("per-arena-ready")!!.colorHex
+    val perArenaInGame = config.getString("per-arena-in-game")!!.colorHex
+    val perArenaReloading = config.getString("per-arena-reloading")!!.colorHex
+    val noArenaFound = config.getString("no-arena-found")!!.colorHex
 
 }

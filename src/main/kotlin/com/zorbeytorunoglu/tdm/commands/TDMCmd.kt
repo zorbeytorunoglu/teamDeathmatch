@@ -4,6 +4,7 @@ import com.zorbeytorunoglu.kLib.extensions.isAlphanumeric
 import com.zorbeytorunoglu.kLib.extensions.isIntegerNumber
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.arena.Arena
+import com.zorbeytorunoglu.tdm.arena.ArenaStatus
 import com.zorbeytorunoglu.tdm.game.GameMap
 import org.bukkit.GameMode
 import org.bukkit.Location
@@ -502,11 +503,51 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
             if (!hasPermission(sender, "tdm.arenas")) return false
 
+            if (plugin.arenaManager.arenas.isEmpty()) {
+                sender.sendMessage(plugin.messages.noArenaFound)
+                return false
+            }
+
             sender.sendMessage(plugin.messages.arenas)
 
-            //TODO: plugin.messages.per-arena ile arena ve gamemap statulerini al
+            for (arena in plugin.arenaManager.arenas.values) {
+
+                if (!arena.isSetup()) {
+                    sender.sendMessage(plugin.messages.perArena
+                        .replace("%map%", arena.name)
+                        .replace("%status%", plugin.messages.perArenaNoSetup))
+                } else {
+
+                    val status = plugin.arenaManager.gameMaps[arena]!!.status
+
+                    val message = plugin.messages.perArenaReady.replace("%map%", arena.name)
+
+                    when (status) {
+                        ArenaStatus.WAITING -> {
+                            sender.sendMessage(message.replace("%status%", plugin.messages.perArenaReady))
+                        }
+                        ArenaStatus.NOT_SETUP -> {
+                            sender.sendMessage(message.replace("%status%", plugin.messages.perArenaNoSetup))
+                        }
+                        ArenaStatus.IN_GAME -> {
+                            sender.sendMessage(message.replace("%status%", plugin.messages.perArenaInGame))
+                        }
+                        ArenaStatus.RELOADING -> {
+                            sender.sendMessage(message.replace("%status%", plugin.messages.perArenaReloading))
+                        }
+                    }
+
+                }
+
+            }
 
             return true
+
+        }
+
+        if (args[0] == "refresh") {
+
+            if (!hasPermission(sender, "tdm.refresh")) return false
 
         }
 
