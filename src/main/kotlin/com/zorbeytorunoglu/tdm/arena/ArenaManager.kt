@@ -3,7 +3,9 @@ package com.zorbeytorunoglu.tdm.arena
 import com.zorbeytorunoglu.kLib.configuration.Resource
 import com.zorbeytorunoglu.kLib.configuration.createFileWithPath
 import com.zorbeytorunoglu.kLib.extensions.info
+import com.zorbeytorunoglu.kLib.extensions.severe
 import com.zorbeytorunoglu.kLib.extensions.toLegibleString
+import com.zorbeytorunoglu.kLib.extensions.warning
 import com.zorbeytorunoglu.kLib.task.MCDispatcher
 import com.zorbeytorunoglu.kLib.task.Scopes
 import com.zorbeytorunoglu.kLib.task.suspendFunctionAsync
@@ -111,7 +113,7 @@ class ArenaManager(val plugin: TDM) {
 
     fun loadArenas() {
 
-        val mapConfigsDir: File = File(plugin.server.worldContainer.absolutePath, "mapConfigs")
+        val mapConfigsDir: File = File(plugin.dataFolder, "mapConfigs")
         val mapsDir = File(plugin.dataFolder, "maps")
 
         if (!mapsDir.exists()) return
@@ -124,60 +126,61 @@ class ArenaManager(val plugin: TDM) {
 
         Scopes.supervisorScope.launch {
 
-            for (file in configs) {
+            plugin.info("[TDM] Loading the team death match maps...")
 
-                plugin.suspendFunctionAsync {
-                    val resource = plugin.createFileWithPath(mapConfigsDir.absolutePath, file.name)
-                    resource.load()
-                    if (!isValidMapConfig(resource)) return@suspendFunctionAsync
-                    if (!maps.contains(File(mapsDir, resource.getString("name")!!))) {
-                        plugin.logger.severe("[TDM] Map ${resource.getString("name")} has a map config file but the actual map file could not be find in 'maps'. Skipping.")
-                        return@suspendFunctionAsync
+            for (file in maps) {
+
+                plugin.suspendFunctionSync {
+
+                    plugin.info("[TDM] Loading ${file.name}...")
+
+                    if (plugin.worldManager.loadWorldFromMaps(file.name)) {
+                        plugin.info("[TDM] ${file.name} is loaded.")
+                        plugin.arenaManager.arenas[file.name] = Arena(file.name)
+                    } else {
+                        plugin.severe("[TDM] Map ${file.name} could not be loaded! Skipping.")
                     }
-
-                    val arena = Arena(resource.getString("name")!!)
-                    arena.displayName = resource.getString("displayname")!!
-                    arena.redSpawn = resource.getLocation("redSpawn")
-                    arena.blueSpawn = resource.getLocation("blueSpawn")
-                    arena.lobby = resource.getLocation("lobby")
-                    arena.spectatorSpawn = resource.getLocation("spectatorSpawn")
-                    arena.maxPlayers = resource.getInt("maxPlayers")
-                    arena.minPlayers = resource.getInt("minPlayers")
-                    arena.time = resource.getInt("time")
-                    arena.playerLives = resource.getInt("playerLives")
-
-                    plugin.arenaManager.arenas[arena.name] = arena
-
-                    plugin.logger.info("[TDM] Arena ${arena.name} is loaded successfully. Map will be loaded soon.")
-
-                    //TODO: Save and load the gates as well.
 
                 }
 
             }
 
         }.invokeOnCompletion {
-            if (plugin.arenaManager.arenas.isEmpty()) return@invokeOnCompletion
-            plugin.logger.info("All the arenas are loaded. Now, loading the maps.")
-
+            plugin.info("[TDM] Loading configurations of maps...")
             Scopes.supervisorScope.launch {
+                for (file in configs) {
 
-                for (arena in plugin.arenaManager.arenas.keys) {
+                    plugin.info("[TDM] Loading ${file.name}...")
 
-                    plugin.suspendFunctionSync {
-                        plugin.logger.info("[TDM] Loading $arena's map...")
-                        if (plugin.worldManager.loadWorldFromMaps(arena)) {
-                            val arenaObj = plugin.arenaManager.arenas[arena]!!
-                            val gameMap = GameMap(arenaObj)
-                            plugin.arenaManager.gameMaps[arenaObj] = gameMap
-                            plugin.logger.info("[TDM] Map $arena is loaded successfully.")
+                    plugin.suspendFunctionAsync {
+                        val resource = plugin.createFileWithPath(mapConfigsDir.absolutePath, file.name)
+                        resource.load()
+                        if (!isValidMapConfig(resource)) return@suspendFunctionAsync
+
+                        val arena = plugin.arenaManager.getArena(resource.getString("name")!!)
+
+                        arena.displayName = resource.getString("displayname")!!
+                        arena.redSpawn = resource.getLocation("redSpawn")
+                        arena.blueSpawn = resource.getLocation("blueSpawn")
+                        arena.lobby = resource.getLocation("lobby")
+                        arena.spectatorSpawn = resource.getLocation("spectatorSpawn")
+                        arena.maxPlayers = resource.getInt("maxPlayers")
+                        arena.minPlayers = resource.getInt("minPlayers")
+                        arena.time = resource.getInt("time")
+                        arena.playerLives = resource.getInt("playerLives")
+
+                        if (!arena.isSetup()) {
+                            plugin.warning("[TDM] ${arena.name} is not setup properly. Try to setup this map again. Skipping.")
+                            return@suspendFunctionAsync
                         }
+
+                        plugin.arenaManager.gameMaps[arena] = GameMap(arena)
+
+                        plugin.info("[TDM] ${arena.name} is loaded successfully.")
+
                     }
-
                 }
-
             }
-
         }
 
     }
@@ -194,6 +197,11 @@ class ArenaManager(val plugin: TDM) {
 
         if (name.isBlank()) {
             plugin.logger.severe("[TDM] ${resource.name} does not have a valid name. It will not be loaded.")
+            return false
+        }
+
+        if (!plugin.server.worlds.stream().anyMatch { it.name == name }) {
+            plugin.severe("[TDM] Map could not be found in loaded maps list. It will not be loaded.")
             return false
         }
 
