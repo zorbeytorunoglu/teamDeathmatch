@@ -167,7 +167,7 @@ class KitManager(val plugin: TDM) {
 
     fun isKitEmpty(kit: Kit): Boolean {
 
-        return kit.contents.isEmpty() && kit.armors.isEmpty() && kit.offHand == null && kit.helmet == null
+        return kit.contents.isEmpty() && kit.armors.isEmpty() && kit.offHand == null
 
     }
 
