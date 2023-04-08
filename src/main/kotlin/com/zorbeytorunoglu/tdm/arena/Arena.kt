@@ -1,5 +1,6 @@
 package com.zorbeytorunoglu.tdm.arena
 
+import com.zorbeytorunoglu.tdm.inventory.Kit
 import org.bukkit.Location
 import org.bukkit.Material
 
@@ -16,6 +17,8 @@ class Arena(val name: String) {
     val blueGate: HashMap<Location, Material> = HashMap()
     var time: Int = 30
     var playerLives: Int = 2
+    var redKit: Kit = Kit(mutableListOf(), mutableListOf())
+    var blueKit: Kit = Kit(mutableListOf(), mutableListOf())
 
     fun isSetup(): Boolean {
 

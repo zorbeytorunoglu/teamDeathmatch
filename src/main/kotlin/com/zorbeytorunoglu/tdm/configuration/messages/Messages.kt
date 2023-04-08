@@ -31,6 +31,10 @@ class Messages(config: Resource) {
     val setupBlueGate = config.getString("setup-blueGate")!!.colorHex
     val setupTime = config.getString("setup-time")!!.colorHex
     val setupPlayerLives = config.getString("setup-playerLives")!!.colorHex
+    val setupRedKit = config.getString("setup-redKit")!!.colorHex
+    val setupBlueKit = config.getString("setup-blueKit")!!.colorHex
+    val setupBlueHelmet = config.getString("setup-blueHelmet")!!.colorHex
+    val setupRedHelmet = config.getString("setup-redHelmet")!!.colorHex
     val setMsg = config.getString("setMsg")!!.colorHex
     val notSetMsg = config.getString("notSetMsg")!!.colorHex
     val setIncorrectUsage = config.getString("set-incorrect-usage")!!.colorHex
@@ -72,5 +76,13 @@ class Messages(config: Resource) {
     val canNotJoin = config.getString("can-not-join")!!.colorHex
     val closeUsage = config.getString("close-usage")!!.colorHex
     val alreadyClosed = config.getString("already-closed")!!.colorHex
+    val gameAlreadyStarted = config.getString("game-already-started")!!.colorHex
+    val setKitUsage = config.getString("set-kit-usage")!!.colorHex
+    val blueKitSet = config.getString("blue-kit-set")!!.colorHex
+    val redKitSet = config.getString("red-kit-set")!!.colorHex
+    val holdItem = config.getString("hold-item")!!.colorHex
+    val redHelmetSet = config.getString("red-helmet-set")!!.colorHex
+    val blueHelmetSet = config.getString("blue-helmet-set")!!.colorHex
+    val cantBeHelmet = config.getString("cant-be-helmet")!!.colorHex
 
 }

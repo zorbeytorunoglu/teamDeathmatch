@@ -1,8 +1,9 @@
 package com.zorbeytorunoglu.tdm.commands
 
+import com.zorbeytorunoglu.kLib.extensions.hasItemInHand
 import com.zorbeytorunoglu.kLib.extensions.isAlphanumeric
+import com.zorbeytorunoglu.kLib.extensions.isHelmet
 import com.zorbeytorunoglu.kLib.extensions.isIntegerNumber
-import com.zorbeytorunoglu.kLib.task.Scopes
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.arena.Arena
 import com.zorbeytorunoglu.tdm.arena.ArenaStatus
@@ -186,6 +187,18 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             sender.sendMessage(plugin.messages.setupPlayerLives
                 .replace("%map%", arenaName)
                 .replace("%x%", "${arena.playerLives}"))
+            sender.sendMessage(plugin.messages.setupRedKit
+                .replace("%map%", arena.name)
+                .replace("%x%", if (plugin.kitManager.isKitEmpty(arena.redKit)) plugin.messages.notSetMsg else plugin.messages.setMsg))
+            sender.sendMessage(plugin.messages.setupBlueKit
+                .replace("%map%", arena.name)
+                .replace("%x%", if (plugin.kitManager.isKitEmpty(arena.blueKit)) plugin.messages.notSetMsg else plugin.messages.setMsg))
+            sender.sendMessage(plugin.messages.setupRedHelmet
+                .replace("%map%", arenaName)
+                .replace("%x%", if (arena.redKit.helmet == null) plugin.messages.notSetMsg else plugin.messages.setMsg))
+            sender.sendMessage(plugin.messages.setupBlueHelmet
+                .replace("%map%", arenaName)
+                .replace("%x%", if (arena.blueKit.helmet == null) plugin.messages.notSetMsg else plugin.messages.setMsg))
 
             return true
 
@@ -463,6 +476,126 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
             }
 
+            else if (args[1] == "redkit") {
+
+                if (!isPlayer(sender)) return false
+
+                if (args.size != 3) {
+                    sender.sendMessage(plugin.messages.setKitUsage)
+                    return false
+                }
+
+                if (!arenaExists(sender, args[2])) return false
+
+                val arena = plugin.arenaManager.getArena(args[2])
+
+                val player = sender as Player
+
+                val kit = plugin.kitManager.inventoryToKit(player.inventory)
+
+                arena.redKit = kit
+
+                player.sendMessage(plugin.messages.redKitSet.replace("%map%", arena.name))
+
+                return true
+
+            }
+
+            else if (args[1] == "bluekit") {
+
+                if (!isPlayer(sender)) return false
+
+                if (args.size != 3) {
+                    sender.sendMessage(plugin.messages.setKitUsage)
+                    return false
+                }
+
+                if (!arenaExists(sender, args[2])) return false
+
+                val arena = plugin.arenaManager.getArena(args[2])
+
+                val player = sender as Player
+
+                val kit = plugin.kitManager.inventoryToKit(player.inventory)
+
+                arena.blueKit = kit
+
+                player.sendMessage(plugin.messages.blueKitSet.replace("%map%", arena.name))
+
+                return true
+
+            }
+
+            else if (args[1] == "redhelmet") {
+
+                if (!isPlayer(sender)) return false
+
+                if (args.size != 3) {
+                    sender.sendMessage(plugin.messages.setIncorrectUsage)
+                    return false
+                }
+
+                val player = sender as Player
+
+                val item = player.inventory.itemInMainHand
+
+                if (item.type == Material.AIR) {
+                    player.sendMessage(plugin.messages.holdItem)
+                    return false
+                }
+
+                if (!item.type.isBlock && !item.type.isHelmet) {
+                    player.sendMessage(plugin.messages.cantBeHelmet)
+                    return false
+                }
+
+                if (!arenaExists(sender, args[2])) return false
+
+                val arena = plugin.arenaManager.getArena(args[2])
+
+                arena.redKit.helmet = player.inventory.itemInMainHand
+
+                player.sendMessage(plugin.messages.redHelmetSet)
+
+                return true
+
+            }
+
+            else if (args[1] == "bluehelmet") {
+
+                if (!isPlayer(sender)) return false
+
+                if (args.size != 3) {
+                    sender.sendMessage(plugin.messages.setIncorrectUsage)
+                    return false
+                }
+
+                val player = sender as Player
+
+                val item = player.inventory.itemInMainHand
+
+                if (item.type == Material.AIR) {
+                    player.sendMessage(plugin.messages.holdItem)
+                    return false
+                }
+
+                if (!item.type.isBlock && !item.type.isHelmet) {
+                    player.sendMessage(plugin.messages.cantBeHelmet)
+                    return false
+                }
+
+                if (!arenaExists(sender, args[2])) return false
+
+                val arena = plugin.arenaManager.getArena(args[2])
+
+                arena.blueKit.helmet = player.inventory.itemInMainHand
+
+                player.sendMessage(plugin.messages.blueHelmetSet)
+
+                return true
+
+            }
+
             else {
                 sender.sendMessage(plugin.messages.setIncorrectUsage)
                 return false
@@ -518,6 +651,8 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
                         .replace("%map%", arena.name)
                         .replace("%status%", plugin.messages.perArenaNoSetup))
                 } else {
+
+                    //TODO: Arena name is not visible
 
                     val status = plugin.arenaManager.gameMaps[arena]!!.status
 
@@ -675,7 +810,24 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
             val arena = plugin.arenaManager.getArena(args[1])
 
+            if (!plugin.arenaManager.gameMapExists(arena)) {
+                sender.sendMessage(plugin.messages.canNotJoin.replace("%map%", arena.displayName))
+                return false
+            }
 
+            val gameMap = plugin.arenaManager.getGameMap(arena)
+
+            if (gameMap.status == ArenaStatus.IN_GAME) {
+                sender.sendMessage(plugin.messages.gameAlreadyStarted.replace("%map%", arena.displayName))
+                return false
+            }
+
+            if (plugin.arenaManager.arenaBusy(arena)) {
+                sender.sendMessage(plugin.messages.canNotJoin.replace("%map%", arena.name))
+                return false
+            }
+
+            //TODO: Continue
 
         }
 

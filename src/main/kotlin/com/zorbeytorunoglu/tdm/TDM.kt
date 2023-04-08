@@ -7,6 +7,7 @@ import com.zorbeytorunoglu.kLib.extensions.fromLegibleString
 import com.zorbeytorunoglu.tdm.arena.ArenaManager
 import com.zorbeytorunoglu.tdm.commands.TDMCmd
 import com.zorbeytorunoglu.tdm.configuration.messages.Messages
+import com.zorbeytorunoglu.tdm.inventory.KitManager
 import com.zorbeytorunoglu.tdm.listeners.WorldInit
 import com.zorbeytorunoglu.tdm.world.WorldManager
 import org.bukkit.Location
@@ -15,6 +16,7 @@ class TDM: MCPlugin() {
 
     lateinit var worldManager: WorldManager
     lateinit var arenaManager: ArenaManager
+    lateinit var kitManager: KitManager
 
     lateinit var messages: Messages
     lateinit var spawnResource: Resource
@@ -38,6 +40,7 @@ class TDM: MCPlugin() {
 
         this.worldManager = WorldManager(this)
         this.arenaManager = ArenaManager(this)
+        this.kitManager = KitManager(this)
 
         TDMCmd(this)
         WorldInit(this)

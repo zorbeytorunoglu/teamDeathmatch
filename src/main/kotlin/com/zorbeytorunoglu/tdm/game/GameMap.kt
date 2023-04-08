@@ -6,6 +6,8 @@ import org.bukkit.entity.Player
 
 class GameMap(val arena: Arena) {
 
+    // lobi olsun bu
+
     var status: ArenaStatus = ArenaStatus.WAITING
     var players: ArrayList<Player> = ArrayList()
     var redTeam: HashMap<Player, PlayerStats> = HashMap()
