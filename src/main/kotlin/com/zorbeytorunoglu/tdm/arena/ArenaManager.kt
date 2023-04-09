@@ -2,10 +2,7 @@ package com.zorbeytorunoglu.tdm.arena
 
 import com.zorbeytorunoglu.kLib.configuration.Resource
 import com.zorbeytorunoglu.kLib.configuration.createFileWithPath
-import com.zorbeytorunoglu.kLib.extensions.info
-import com.zorbeytorunoglu.kLib.extensions.severe
-import com.zorbeytorunoglu.kLib.extensions.toLegibleString
-import com.zorbeytorunoglu.kLib.extensions.warning
+import com.zorbeytorunoglu.kLib.extensions.*
 import com.zorbeytorunoglu.kLib.task.MCDispatcher
 import com.zorbeytorunoglu.kLib.task.Scopes
 import com.zorbeytorunoglu.kLib.task.suspendFunctionAsync
@@ -13,6 +10,8 @@ import com.zorbeytorunoglu.kLib.task.suspendFunctionSync
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.game.GameMap
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
+import org.bukkit.Location
 import java.io.File
 
 class ArenaManager(val plugin: TDM) {
@@ -69,21 +68,20 @@ class ArenaManager(val plugin: TDM) {
         resource.set("time", arena.time)
         resource.set("playerLives", arena.playerLives)
 
-        if (arena.redGate.isNotEmpty()) {
+        if (arena.gates.isNotEmpty()) {
 
-            arena.redGate.keys.forEach {
-                resource.set(it.toLegibleString(), arena.redGate[it].toString())
+            val legibleLocs = ArrayList<String>()
+
+            arena.gates.forEach {
+                legibleLocs.add(it.toLegibleString())
             }
+
+            resource.set("gates", legibleLocs)
 
         }
 
-        if (arena.blueGate.isNotEmpty()) {
-
-            arena.blueGate.keys.forEach {
-                resource.set(it.toLegibleString(), arena.blueGate[it].toString())
-            }
-
-        }
+        plugin.kitManager.saveKit(arena.redKit, "redKit", resource)
+        plugin.kitManager.saveKit(arena.blueKit, "blueKit", resource)
 
         resource.save()
 
@@ -179,6 +177,19 @@ class ArenaManager(val plugin: TDM) {
                         arena.minPlayers = resource.getInt("minPlayers")
                         arena.time = resource.getInt("time")
                         arena.playerLives = resource.getInt("playerLives")
+
+                        arena.redKit = plugin.kitManager.loadKit("redKit", resource)
+                        arena.blueKit = plugin.kitManager.loadKit("blueKit", resource)
+
+                        if (resource.isSet("gates")) {
+                            if (resource.isList("gates")) {
+                                val arrayList = ArrayList<Location>()
+                                resource.getStringList("gates").forEach {
+                                    arrayList.add(fromLegibleString(it))
+                                }
+                                arena.gates = arrayList
+                            }
+                        }
 
                         if (!arena.isSetup()) {
                             plugin.warning("[TDM] ${arena.name} is not setup properly. Try to setup this map again. Skipping.")
@@ -306,8 +317,55 @@ class ArenaManager(val plugin: TDM) {
             return false
         }
 
+        if (resource.isSet("gates")) {
+            if (!resource.isList("gates")) {
+                plugin.logger.severe("[TDM] ${resource.name} does not have valid gates. It will not be loaded.")
+                return false
+            }
+        }
+
+        if (resource.isConfigurationSection("redKit")) {
+
+            val set = resource.getConfigurationSection("redKit")!!.getKeys(false)
+
+            if (set.isEmpty()) {
+                plugin.logger.severe("[TDM] ${resource.name} does not have valid a red kit. It will not be loaded.")
+                return false
+            }
+
+            if (!set.contains("contents") && !set.contains("armors") && !set.contains("helmet") && !set.contains("offhand")) {
+                plugin.logger.severe("[TDM] ${resource.name} does not have valid a red kit. It will not be loaded.")
+                return false
+            }
+
+        }
+
+        if (resource.isConfigurationSection("blueKit")) {
+
+            val set = resource.getConfigurationSection("blueKit")!!.getKeys(false)
+
+            if (set.isEmpty()) {
+                plugin.logger.severe("[TDM] ${resource.name} does not have valid a blue kit. It will not be loaded.")
+                return false
+            }
+
+            if (!set.contains("contents") && !set.contains("armors") && !set.contains("helmet") && !set.contains("offhand")) {
+                plugin.logger.severe("[TDM] ${resource.name} does not have valid a blue kit. It will not be loaded.")
+                return false
+            }
+
+        }
+
         return true
 
+    }
+
+    private fun fromLegibleString(string: String): Location {
+        val args: List<String> = string.split(";")
+
+        return Location(
+            Bukkit.getWorld(args[0]),args[1].toDouble(),args[2].toDouble(),args[3].toDouble(),
+            args[4].toFloat(), args[5].toFloat())
     }
 
 }

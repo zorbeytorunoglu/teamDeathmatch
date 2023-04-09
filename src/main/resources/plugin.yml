@@ -37,5 +37,8 @@ permissions:
     description: Permission to join games.
     default: true
   tdm.close:
-    description: Permission to close the arena.
+    description: Permission to close an arena.
+    default: op
+  tdm.open:
+    description: Permission to open an arena.
     default: op

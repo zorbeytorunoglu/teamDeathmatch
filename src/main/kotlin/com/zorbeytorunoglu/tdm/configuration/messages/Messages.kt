@@ -27,8 +27,7 @@ class Messages(config: Resource) {
     val setupSpectatorSpawn = config.getString("setup-spectatorSpawn")!!.colorHex
     val setupMaxPlayers = config.getString("setup-maxPlayers")!!.colorHex
     val setupMinPlayers = config.getString("setup-minPlayers")!!.colorHex
-    val setupRedGate = config.getString("setup-redGate")!!.colorHex
-    val setupBlueGate = config.getString("setup-blueGate")!!.colorHex
+    val setupGates = config.getString("setup-gates")!!.colorHex
     val setupTime = config.getString("setup-time")!!.colorHex
     val setupPlayerLives = config.getString("setup-playerLives")!!.colorHex
     val setupRedKit = config.getString("setup-redKit")!!.colorHex
@@ -45,8 +44,6 @@ class Messages(config: Resource) {
     val setSpectatorSpawn = config.getString("set-spectatorSpawn")!!.colorHex
     val setMaxPlayers = config.getString("set-maxPlayers")!!.colorHex
     val setMinPlayers = config.getString("set-minPlayers")!!.colorHex
-    val setRedGate = config.getString("set-redGate")!!.colorHex
-    val setBlueGate = config.getString("set-blueGate")!!.colorHex
     val setTime = config.getString("set-time")!!.colorHex
     val setPlayerLives = config.getString("set-playerLives")!!.colorHex
     val invalidNumber = config.getString("invalid-number")!!.colorHex
@@ -84,5 +81,11 @@ class Messages(config: Resource) {
     val redHelmetSet = config.getString("red-helmet-set")!!.colorHex
     val blueHelmetSet = config.getString("blue-helmet-set")!!.colorHex
     val cantBeHelmet = config.getString("cant-be-helmet")!!.colorHex
+    val quitSelectionMode = config.getString("quit-selection-mode")!!.colorHex
+    val openUsage = config.getString("open-usage")!!.colorHex
+    val notClosed = config.getString("not-closed")!!.colorHex
+    val opened = config.getString("opened")!!.colorHex
+    val gateBlockAdded = config.getString("gate-block-added")!!.colorHex
+    val setGates = config.getString("set-gates")!!.colorHex
 
 }

@@ -41,7 +41,13 @@ class KitManager(val plugin: TDM) {
             }
         }
 
-        return Kit(contents, armors)
+        val kit = Kit(contents, armors)
+
+        if (playerInventory.itemInOffHand.type != Material.AIR) {
+            kit.offHand = playerInventory.itemInOffHand
+        }
+
+        return kit
 
     }
 
@@ -64,7 +70,7 @@ class KitManager(val plugin: TDM) {
 
             var slot = 0
 
-            for (item in kit.contents) {
+            for (item in kit.armors) {
                 if (validItem(item)) {
                     resource.set("$path.armors.$slot", item)
                     slot++
@@ -167,7 +173,7 @@ class KitManager(val plugin: TDM) {
 
     fun isKitEmpty(kit: Kit): Boolean {
 
-        return kit.contents.isEmpty() && kit.armors.isEmpty() && kit.offHand == null
+        return kit.contents.isEmpty() && kit.armors.isEmpty() && kit.offHand == null && kit.helmet == null
 
     }
 

@@ -13,8 +13,7 @@ class Arena(val name: String) {
     var spectatorSpawn: Location? = null
     var maxPlayers: Int = 10
     var minPlayers: Int = 2
-    val redGate: HashMap<Location, Material> = HashMap()
-    val blueGate: HashMap<Location, Material> = HashMap()
+    var gates = ArrayList<Location>()
     var time: Int = 30
     var playerLives: Int = 2
     var redKit: Kit = Kit(mutableListOf(), mutableListOf())

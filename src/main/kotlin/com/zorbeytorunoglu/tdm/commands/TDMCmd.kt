@@ -1,6 +1,6 @@
 package com.zorbeytorunoglu.tdm.commands
 
-import com.zorbeytorunoglu.kLib.extensions.hasItemInHand
+import com.zorbeytorunoglu.kLib.extensions.clearAllInventory
 import com.zorbeytorunoglu.kLib.extensions.isAlphanumeric
 import com.zorbeytorunoglu.kLib.extensions.isHelmet
 import com.zorbeytorunoglu.kLib.extensions.isIntegerNumber
@@ -8,6 +8,7 @@ import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.arena.Arena
 import com.zorbeytorunoglu.tdm.arena.ArenaStatus
 import com.zorbeytorunoglu.tdm.game.GameMap
+import com.zorbeytorunoglu.tdm.listeners.GateSelection
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
@@ -17,9 +18,10 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.event.player.PlayerTeleportEvent
+import org.bukkit.inventory.ItemStack
 import java.lang.StringBuilder
 
-class TDMCmd(val plugin: TDM): CommandExecutor {
+class TDMCmd(private val plugin: TDM): CommandExecutor {
 
     init {
         plugin.getCommand("tdm")!!.setExecutor(this)
@@ -121,14 +123,15 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             val arena = plugin.arenaManager.getArena(arenaName)
 
             if (!arena.isSetup()) {
-                sender.sendMessage(plugin.messages.arenaNotSetup)
+                sender.sendMessage(plugin.messages.arenaNotSetup.replace("%map%", arenaName))
                 return false
             }
 
             return if (plugin.worldManager.saveMap(arenaName)) {
-                sender.sendMessage(plugin.messages.mapSaved.replace("%map%", arenaName))
                 plugin.arenaManager.saveMapConfig(arena)
                 plugin.arenaManager.gameMaps[arena] = GameMap(arena)
+                plugin.worldManager.loadWorld(arena.name, World.Environment.NORMAL)
+                sender.sendMessage(plugin.messages.mapSaved.replace("%map%", arenaName))
                 true
             } else {
                 sender.sendMessage(plugin.messages.mapNotSaved.replace("%map%", arenaName))
@@ -175,12 +178,9 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             sender.sendMessage(plugin.messages.setupMinPlayers
                 .replace("%map%", arenaName)
                 .replace("%x%", "${arena.minPlayers}"))
-            sender.sendMessage(plugin.messages.setupRedGate
+            sender.sendMessage(plugin.messages.setupGates
                 .replace("%map%", arenaName)
-                .replace("%x%", if (arena.redGate.isEmpty()) plugin.messages.notSetMsg else plugin.messages.setMsg))
-            sender.sendMessage(plugin.messages.setupBlueGate
-                .replace("%map%", arenaName)
-                .replace("%x%", if (arena.blueGate.isEmpty()) plugin.messages.notSetMsg else plugin.messages.setMsg))
+                .replace("%x%", if (arena.gates.isEmpty()) plugin.messages.notSetMsg else plugin.messages.setMsg))
             sender.sendMessage(plugin.messages.setupTime
                 .replace("%map%", arenaName)
                 .replace("%x%", "${arena.time}"))
@@ -386,7 +386,7 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
             }
 
-            else if (args[1] == "redgate") {
+            else if (args[1] == "gates") {
 
                 if (!isPlayer(sender)) return false
 
@@ -399,30 +399,16 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
                 if (!arenaExists(sender, arenaName)) return false
 
-                sender.sendMessage(plugin.messages.setRedGate)
+                val player = sender as Player
 
-                //TODO: Red Gate & Blue Gate editors, listener
-
-                return true
-
-            }
-
-            else if (args[1] == "bluegate") {
-
-                if (!isPlayer(sender)) return false
-
-                if (args.size != 3) {
-                    sender.sendMessage(plugin.messages.setIncorrectUsage)
-                    return false
+                if (GateSelection.selectionMode.containsKey(player.uniqueId.toString())) {
+                    GateSelection.selectionMode.remove(player.uniqueId.toString())
+                    player.sendMessage(plugin.messages.quitSelectionMode)
+                } else {
+                    GateSelection.selectionMode[player.uniqueId.toString()] =
+                        plugin.arenaManager.getArena(arenaName)
+                    player.sendMessage(plugin.messages.setGates.replace("%map%", arenaName))
                 }
-
-                val arenaName = args[2]
-
-                if (!arenaExists(sender, arenaName)) return false
-
-                sender.sendMessage(plugin.messages.setBlueGate)
-
-                //TODO: Red Gate & Blue Gate editors, listener
 
                 return true
 
@@ -553,7 +539,11 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
                 val arena = plugin.arenaManager.getArena(args[2])
 
-                arena.redKit.helmet = player.inventory.itemInMainHand
+                val helmet = ItemStack(player.inventory.itemInMainHand)
+
+                helmet.amount = 1
+
+                arena.redKit.helmet = helmet
 
                 player.sendMessage(plugin.messages.redHelmetSet)
 
@@ -588,7 +578,11 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
                 val arena = plugin.arenaManager.getArena(args[2])
 
-                arena.blueKit.helmet = player.inventory.itemInMainHand
+                val helmet = ItemStack(player.inventory.itemInMainHand)
+
+                helmet.amount = 1
+
+                arena.blueKit.helmet = helmet
 
                 player.sendMessage(plugin.messages.blueHelmetSet)
 
@@ -656,7 +650,7 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
                     val status = plugin.arenaManager.gameMaps[arena]!!.status
 
-                    val message = plugin.messages.perArenaReady.replace("%map%", arena.name)
+                    val message = plugin.messages.perArena.replace("%map%", arena.name)
 
                     when (status) {
                         ArenaStatus.WAITING -> {
@@ -747,14 +741,12 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
 
             }
 
-            sender.sendMessage(plugin.messages.mapDeleted.replace("%map%", arena.name))
-
             if (plugin.arenaManager.gameMapExists(arena)) {
                 plugin.arenaManager.gameMaps.remove(arena)
             }
             plugin.arenaManager.arenas.remove(arena.name)
 
-            sender.sendMessage(plugin.messages.mapDeleted)
+            sender.sendMessage(plugin.messages.mapDeleted.replace("%map%", arena.name))
 
             return true
 
@@ -788,6 +780,39 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             plugin.arenaManager.gameMaps[arena]!!.status = ArenaStatus.CLOSED
 
             sender.sendMessage(plugin.messages.arenaClosed.replace("%map%", arena.name))
+
+            return true
+
+        }
+
+        if (args[0] == "open") {
+
+            if (!hasPermission(sender, "tdm.open")) return false
+
+            if (args.size != 2) {
+                sender.sendMessage(plugin.messages.openUsage)
+                return false
+            }
+
+            if (!arenaExists(sender, args[1])) return false
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+            if (!plugin.arenaManager.gameMapExists(arena)) {
+                sender.sendMessage(plugin.messages.arenaNotSetup)
+                return false
+            }
+
+            var status = plugin.arenaManager.getGameMap(arena).status
+
+            if (status != ArenaStatus.CLOSED) {
+                sender.sendMessage(plugin.messages.notClosed)
+                return false
+            }
+
+            status = ArenaStatus.WAITING
+
+            sender.sendMessage(plugin.messages.opened)
 
             return true
 
@@ -828,6 +853,28 @@ class TDMCmd(val plugin: TDM): CommandExecutor {
             }
 
             //TODO: Continue
+
+        }
+
+        if (args[0] == "test") {
+
+            val arena = plugin.arenaManager.getArena(args[1])
+
+            val player = sender as Player
+
+            player.clearAllInventory()
+
+            player.inventory.contents = arena.redKit.contents
+
+            player.inventory.setArmorContents(arena.redKit.armors)
+
+            player.inventory.setItemInOffHand(arena.redKit.offHand)
+
+            player.inventory.helmet = arena.redKit.helmet
+
+            player.sendMessage("verdim")
+
+            return true
 
         }
 
