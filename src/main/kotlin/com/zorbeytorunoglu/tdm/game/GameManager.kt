@@ -5,16 +5,20 @@ import com.zorbeytorunoglu.tdm.arena.Arena
 import org.bukkit.Material
 import org.bukkit.entity.Player
 
-class GameManager(val plugin: TDM) {
+class GameManager(private val plugin: TDM) {
 
     fun playerInGame(player: Player, gameMap: GameMap): Boolean {
-        if (gameMap.players.isEmpty()) return false
-        return true
-        //devamke
+
+        return gameMap.inGamePlayers.any {
+            it.uuid == player.uniqueId.toString()
+        }
+
     }
 
-    fun arenaFull(gameMap: GameMap): Boolean {
-        return gameMap.players.size == gameMap.arena.maxPlayers
+    fun isArenaFull(gameMap: GameMap): Boolean {
+
+        return gameMap.inGamePlayers.size >= gameMap.arena.maxPlayers
+
     }
 
     fun removeGates(arena: Arena) {
