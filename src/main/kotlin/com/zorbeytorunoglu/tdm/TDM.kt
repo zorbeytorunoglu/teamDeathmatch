@@ -4,6 +4,7 @@ import com.zorbeytorunoglu.kLib.MCPlugin
 import com.zorbeytorunoglu.kLib.configuration.Resource
 import com.zorbeytorunoglu.kLib.configuration.createYamlResource
 import com.zorbeytorunoglu.tdm.arena.ArenaManager
+import com.zorbeytorunoglu.tdm.cache.CacheManager
 import com.zorbeytorunoglu.tdm.commands.TDMCmd
 import com.zorbeytorunoglu.tdm.configuration.messages.Messages
 import com.zorbeytorunoglu.tdm.game.GameManager
@@ -19,6 +20,7 @@ class TDM: MCPlugin() {
     lateinit var arenaManager: ArenaManager
     lateinit var kitManager: KitManager
     lateinit var gameManager: GameManager
+    lateinit var cacheManager: CacheManager
 
     lateinit var messages: Messages
     lateinit var spawnResource: Resource
@@ -44,11 +46,13 @@ class TDM: MCPlugin() {
         arenaManager = ArenaManager(this)
         kitManager = KitManager(this)
         gameManager = GameManager(this)
+        cacheManager = CacheManager(this, createYamlResource("cache.yml"))
 
         TDMCmd(this)
         WorldInit(this)
         GateSelection(this)
 
+        cacheManager.loadUUIDs()
         arenaManager.loadArenas()
 
     }
@@ -56,6 +60,7 @@ class TDM: MCPlugin() {
     override fun onDisable() {
         super.onDisable()
 
+        cacheManager.saveUUIDs()
         arenaManager.unloadArenas()
 
     }
