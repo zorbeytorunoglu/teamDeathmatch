@@ -646,8 +646,6 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
                         .replace("%status%", plugin.messages.perArenaNoSetup))
                 } else {
 
-                    //TODO: Arena name is not visible
-
                     val status = plugin.arenaManager.gameMaps[arena]!!.status
 
                     val message = plugin.messages.perArena.replace("%map%", arena.name)
