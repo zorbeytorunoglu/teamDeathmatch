@@ -1,6 +1,7 @@
 package com.zorbeytorunoglu.tdm.inventory
 
 import com.zorbeytorunoglu.kLib.configuration.Resource
+import com.zorbeytorunoglu.kLib.configuration.createYamlResource
 import com.zorbeytorunoglu.tdm.TDM
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
@@ -11,6 +12,7 @@ import org.bukkit.inventory.PlayerInventory
 class KitManager(val plugin: TDM) {
 
     val playerKits = HashMap<String, Kit>()
+    val playerKitsResource = plugin.createYamlResource("playerKits.yml")
 
     fun inventoryToKit(playerInventory: PlayerInventory): Kit {
 
@@ -174,6 +176,16 @@ class KitManager(val plugin: TDM) {
     fun isKitEmpty(kit: Kit): Boolean {
 
         return kit.contents.isEmpty() && kit.armors.isEmpty() && kit.offHand == null && kit.helmet == null
+
+    }
+
+    fun savePlayerKitsToResource() {
+
+        if (playerKits.isEmpty()) return
+
+        playerKits.keys.forEach {
+            saveKit(playerKits[it]!!, it, playerKitsResource)
+        }
 
     }
 
