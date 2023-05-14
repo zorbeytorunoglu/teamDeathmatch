@@ -1,0 +1,20 @@
+lobbyScoreboard:
+  title: '&e&lTEAM DEATHMATCH'
+  lines:
+    - '&7Arena: &a%arena_displayname%'
+    - ' '
+    - '&7Countdown will start after'
+    - '&7we have at least &a%min_player%'
+    - ' '
+    - '&7Players: &a%players%&7/&c%max_players%'
+gameScoreboard:
+  title: '&e&lTEAM DEATHMATCH'
+  lines:
+    - '&7Arena: &a%arena_displayname%'
+    - ' '
+    - '&7Team: &a%team%'
+    - '&7Kills: &a%kills%'
+    - '&7Lives: &a%live%'
+    - ' '
+    - '&7Red Alive: &c%red_alive%'
+    - '&7Blue Alive: &b%blue_alive%'
