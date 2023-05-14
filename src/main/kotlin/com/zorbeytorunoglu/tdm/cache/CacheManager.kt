@@ -50,4 +50,10 @@ class CacheManager(private val plugin: TDM, private val resource: Resource) {
 
     }
 
+    fun getPlayerName(uuidString: String): String {
+
+        return playerUUIDs[uuidString]!!
+
+    }
+
 }
