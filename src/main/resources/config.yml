@@ -1,1 +1,3 @@
-spawn: null
+countdownSound: BLOCK_COMPARATOR_CLICK
+winCommands:
+  - 'eco give %player% 1000'
