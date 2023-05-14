@@ -87,5 +87,10 @@ class Messages(config: Resource) {
     val opened = config.getString("opened")!!.colorHex
     val gateBlockAdded = config.getString("gate-block-added")!!.colorHex
     val setGates = config.getString("set-gates")!!.colorHex
+    val noFriendlyFire = config.getString("no-friendly-fire")!!.colorHex
+    val youLost = config.getString("you-lost")!!.colorHex
+    val lobbyFull = config.getString("lobby-full")!!.colorHex
+    val alreadyInGame = config.getString("already-in-game")!!.colorHex
+    val joined = config.getString("joined")!!.colorHex
 
 }
