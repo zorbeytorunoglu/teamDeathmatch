@@ -850,6 +850,22 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
                 return false
             }
 
+            if (plugin.gameManager.playerInAnyGame(sender)) {
+                sender.sendMessage(plugin.messages.alreadyInGame)
+                return false
+            }
+
+            if (plugin.gameManager.isLobbyFull(gameMap)) {
+                sender.sendMessage(plugin.messages.lobbyFull)
+                return false
+            }
+
+            plugin.gameManager.join(sender, gameMap)
+
+            sender.sendMessage(plugin.messages.joined.replace("%arena%", gameMap.arena.displayName))
+
+            return true
+
             //TODO: Continue
 
         }
