@@ -104,9 +104,11 @@ class GameManager(private val plugin: TDM) {
 
         plugin.scoreboardManager.updateLobby(gameMap)
 
-        //TODO: Scoreboard
+        if (gameMap.hasMinPlayers()) {
 
-        //TODO: Save kit, join lobby, wait, check for min player
+            LobbyCountdown(plugin, gameMap).runTaskTimer(plugin, 20L, 20L)
+
+        }
 
     }
 
@@ -127,12 +129,14 @@ class GameManager(private val plugin: TDM) {
             gameMap.getRedTeam().forEach {
                 plugin.suspendFunctionSync {
                     teleportToSpawn(gameMap, it)
+                    plugin.scoreboardManager.giveGameBoard(it, gameMap)
                 }
             }
 
             gameMap.getBlueTeam().forEach {
                 plugin.suspendFunctionSync {
                     teleportToSpawn(gameMap, it)
+                    plugin.scoreboardManager.giveGameBoard(it, gameMap)
                 }
             }
 
@@ -170,8 +174,6 @@ class GameManager(private val plugin: TDM) {
 
                 }.invokeOnCompletion {
 
-                    //TODO: Gate countdown, countdown, start
-
                     var waitTime = 10 //TODO: Can be configurable
 
                     val task = object : BukkitRunnable() {
@@ -179,7 +181,7 @@ class GameManager(private val plugin: TDM) {
 
                             if (waitTime <= 0) {
 
-                                //TODO: Remove gates, start game
+                                removeGates(gameMap.arena)
 
                                 cancel()
                                 return
@@ -388,6 +390,16 @@ class GameManager(private val plugin: TDM) {
                 }
 
             }
+
+        }
+
+    }
+
+    fun playerLeft(gamePlayer: GamePlayer, gameMap: GameMap) {
+
+        if (gameMap.inGamePlayers.contains(gamePlayer)) {
+
+            gameMap.inGamePlayers.remove(gamePlayer)
 
         }
 
