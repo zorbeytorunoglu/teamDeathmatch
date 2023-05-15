@@ -866,8 +866,6 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
 
             return true
 
-            //TODO: Continue
-
         }
 
         if (args[0] == "test") {
