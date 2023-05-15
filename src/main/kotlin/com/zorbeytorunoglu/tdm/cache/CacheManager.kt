@@ -5,6 +5,7 @@ import com.zorbeytorunoglu.kLib.extensions.info
 import com.zorbeytorunoglu.kLib.extensions.registerEvents
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.cache.player.PlayerUUIDCache
+import org.bukkit.entity.Player
 import java.util.*
 
 
@@ -53,6 +54,12 @@ class CacheManager(private val plugin: TDM, private val resource: Resource) {
     fun getPlayerName(uuidString: String): String {
 
         return playerUUIDs[uuidString]!!
+
+    }
+
+    fun getPlayer(uuidString: String): Player? {
+
+        return plugin.server.getPlayer(UUID.fromString(uuidString))
 
     }
 
