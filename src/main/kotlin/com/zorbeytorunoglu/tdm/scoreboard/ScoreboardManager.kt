@@ -5,6 +5,7 @@ import com.zorbeytorunoglu.kLib.extensions.colorHex
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.configuration.scoreboards.Scoreboards
 import com.zorbeytorunoglu.tdm.game.GameMap
+import com.zorbeytorunoglu.tdm.game.player.GamePlayer
 import org.bukkit.entity.Player
 import java.util.*
 import kotlin.collections.ArrayList
@@ -76,6 +77,38 @@ class ScoreboardManager(private val plugin: TDM) {
         gameMap.lobbyBoards.remove(player.uniqueId.toString())
 
         board?.delete()
+
+    }
+
+    fun giveGameBoard(gamePlayer: GamePlayer, gameMap: GameMap) {
+
+        val player = plugin.gameManager.getPlayer(gamePlayer)
+
+        val board = FastBoard(player)
+
+        board.updateTitle(scoreboardsConfig.gameScoreboardTitle
+            .replace("%arena%", gameMap.arena.displayName.colorHex))
+
+        val newLines = ArrayList<String>()
+
+        scoreboardsConfig.gameScoreboardLines.forEach {
+
+            newLines.add(it
+                .replace("%arena%", gameMap.arena.displayName)
+                .replace("%players%", "${gameMap.lobbyPlayers.size}")
+                .replace("%min_players%", "${gameMap.arena.minPlayers}")
+                .replace("%max_players%", "${gameMap.arena.maxPlayers}")
+                .replace("%red_alive%", "${plugin.gameManager.getRedAlivePlayers(gameMap).size}")
+                .replace("%blue_alive%", "${plugin.gameManager.getBlueAlivePlayers(gameMap).size}")
+                .replace("%live%", "${gamePlayer.stats.live}")
+                .replace("%kills%", "${gamePlayer.stats.kills}")
+                .colorHex)
+
+        }
+
+        board.updateLines(newLines)
+
+        gameMap.gameBoards[player!!.uniqueId.toString()] = board
 
     }
 
