@@ -189,4 +189,11 @@ class KitManager(val plugin: TDM) {
 
     }
 
+    fun restorePlayerInventory(player: Player) {
+
+        if (playerKits.containsKey(player.uniqueId.toString()))
+            giveKit(player, playerKits[player.uniqueId.toString()]!!)
+
+    }
+
 }

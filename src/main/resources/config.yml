@@ -1,3 +1,11 @@
 countdownSound: BLOCK_COMPARATOR_CLICK
+lobbyCountdown: 10
 winCommands:
   - 'eco give %player% 1000'
+lobbyCommandWhitelist:
+  - '/msg'
+  - '/m'
+  - '/pm'
+  - '/tdm leave'
+gameCommandWhitelist:
+  - '/msg'

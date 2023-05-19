@@ -12,5 +12,9 @@ class Config(config: Resource) {
     }
 
     val winCommands: List<String> = config.getStringList("winCommands")
+    val debug = config.getBoolean("debug")
+    val lobbyCommandWhitelist: List<String> = config.getStringList("lobbyCommandWhitelist")
+    val gameCommandWhitelist: List<String> = config.getStringList("gameCommandWhitelist")
+    val lobbyCountdown = config.getInt("lobbyCountdown")
 
 }

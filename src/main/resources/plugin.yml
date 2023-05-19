@@ -42,3 +42,9 @@ permissions:
   tdm.open:
     description: Permission to open an arena.
     default: op
+  tdm.leave:
+    description: Permission to leave a lobby.
+    default: true
+  tdm.help:
+    description: Permission to see all the commands.
+    default: op

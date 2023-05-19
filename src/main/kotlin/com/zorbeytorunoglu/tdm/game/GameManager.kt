@@ -18,8 +18,7 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
-import java.util.*
-
+import java.util.UUID
 
 class GameManager(private val plugin: TDM) {
 
@@ -34,6 +33,63 @@ class GameManager(private val plugin: TDM) {
         }
 
         return null
+
+    }
+
+    fun getPlayerGame(uuid: String): GameMap? {
+
+        if (plugin.arenaManager.gameMaps.isEmpty()) return null
+
+        plugin.arenaManager.gameMaps.values.forEach {gameMap ->
+
+            gameMap.inGamePlayers.forEach { if (it.uuid == uuid) return gameMap }
+
+        }
+
+        return null
+
+    }
+
+    fun getGameMapGamePlayer(uuid: String): Pair<GameMap?, GamePlayer?> {
+
+        if (plugin.arenaManager.gameMaps.isEmpty()) return Pair(null, null)
+
+        plugin.arenaManager.gameMaps.values.forEach { gameMap ->
+
+            gameMap.inGamePlayers.forEach {
+                if (it.uuid == uuid) return Pair(gameMap, it)
+            }
+
+        }
+
+        return Pair(null, null)
+
+    }
+
+    fun getGameMap(player: Player): GameMap? {
+
+        if (plugin.arenaManager.gameMaps.isEmpty()) return null
+
+        plugin.arenaManager.gameMaps.values.forEach { gameMap ->
+            if (gameMap.inGamePlayers.any { it.uuid == player.uniqueId.toString() }) return gameMap
+        }
+
+        plugin.arenaManager.gameMaps.values.forEach { gameMap ->
+            if (gameMap.lobbyPlayers.any { it == player.uniqueId.toString() })
+                return gameMap
+        }
+
+        return null
+
+    }
+
+    fun getPlayerGame(gamePlayer: GamePlayer): GameMap? {
+
+        if (plugin.arenaManager.gameMaps.isEmpty()) return null
+
+        return plugin.arenaManager.gameMaps.values.firstOrNull {
+            it.inGamePlayers.contains(gamePlayer)
+        }
 
     }
 
@@ -60,6 +116,18 @@ class GameManager(private val plugin: TDM) {
         }
 
         return false
+
+    }
+
+    fun playerInAnyLobby(player: Player): Boolean {
+
+        if (plugin.arenaManager.gameMaps.isEmpty()) return false
+
+        return plugin.arenaManager.gameMaps.values.any {
+
+            it.lobbyPlayers.contains(player.uniqueId.toString())
+
+        }
 
     }
 
@@ -93,6 +161,8 @@ class GameManager(private val plugin: TDM) {
 
         gameMap.lobbyPlayers.add(player.uniqueId.toString())
 
+        player.gameMode = GameMode.SURVIVAL
+
         player.teleport(gameMap.arena.lobby!!)
 
         plugin.kitManager.playerKits[player.uniqueId.toString()] =
@@ -104,7 +174,7 @@ class GameManager(private val plugin: TDM) {
 
         plugin.scoreboardManager.updateLobby(gameMap)
 
-        if (gameMap.hasMinPlayers()) {
+        if (gameMap.arena.minPlayers == gameMap.lobbyPlayers.size) {
 
             LobbyCountdown(plugin, gameMap).runTaskTimer(plugin, 20L, 20L)
 
@@ -117,8 +187,12 @@ class GameManager(private val plugin: TDM) {
         for (i in 0 until gameMap.lobbyPlayers.size) {
             if (i < gameMap.lobbyPlayers.size / 2) {
                 gameMap.inGamePlayers.add(GamePlayer(gameMap.lobbyPlayers[i], Team.RED))
+                println("team red verdim")
             } else {
                 gameMap.inGamePlayers.add(GamePlayer(gameMap.lobbyPlayers[i], Team.BLUE))
+                println("team blue verdim")
+
+                //TODO: Debug messages
             }
         }
 
@@ -188,7 +262,7 @@ class GameManager(private val plugin: TDM) {
                             }
 
                             gameMap.inGamePlayers.forEach {
-                                sendActionBar(it, "$waitTime")
+                                sendActionBar(it, plugin.messages.waitTime.replace("%seconds%", "$waitTime"))
                                 if (plugin.config.countdownSound != null)
                                     getPlayer(it)!!.playSound(plugin.config.countdownSound!!, 1.0F, 1.0F)
                             }
@@ -217,7 +291,7 @@ class GameManager(private val plugin: TDM) {
             }
 
         } else {
-            //TODO: Player left
+            playerLeft(gamePlayer, gameMap)
         }
 
     }
@@ -226,7 +300,7 @@ class GameManager(private val plugin: TDM) {
         if (getPlayer(gamePlayer) != null) {
             plugin.kitManager.playerKits[gamePlayer.uuid] = plugin.kitManager.inventoryToKit(getPlayer(gamePlayer)!!.inventory)
         } else {
-            //TODO: Player left
+            playerLeft(gamePlayer, getPlayerGame(gamePlayer)!!)
         }
     }
 
@@ -251,7 +325,7 @@ class GameManager(private val plugin: TDM) {
         if (getPlayer(gamePlayer) != null) {
             getPlayer(gamePlayer)!!.clearAllInventory()
         } else {
-            //TODO: Player left
+            playerLeft(gamePlayer, getPlayerGame(gamePlayer)!!)
         }
 
     }
@@ -261,7 +335,7 @@ class GameManager(private val plugin: TDM) {
         if (getPlayer(gamePlayer) != null) {
             Utils.sendActionBar(getPlayer(gamePlayer)!!, message)
         } else {
-            //TODO: Player left
+            playerLeft(gamePlayer, getPlayerGame(gamePlayer)!!)
         }
 
     }
@@ -272,7 +346,7 @@ class GameManager(private val plugin: TDM) {
 
         return gameMap.inGamePlayers.filter {
 
-            it.team == Team.BLUE
+            it.team == Team.BLUE && it.status == PlayerStatus.PLAYING
 
         }
 
@@ -284,7 +358,7 @@ class GameManager(private val plugin: TDM) {
 
         return gameMap.inGamePlayers.filter {
 
-            it.team == Team.RED
+            it.team == Team.RED && it.status == PlayerStatus.PLAYING
 
         }
 
@@ -294,11 +368,14 @@ class GameManager(private val plugin: TDM) {
 
         gameMap.inGamePlayers.clear()
         gameMap.spectators.clear()
+        gameMap.lobbyBoards.clear()
+        gameMap.gameBoards.clear()
 
         gameMap.status = ArenaStatus.RELOADING
 
         if (plugin.worldManager.loadWorldFromMaps(gameMap.arena.name)) {
             plugin.info("${gameMap.arena.name} is refreshed.")
+            gameMap.arena.reloadLocations()
             gameMap.status = ArenaStatus.WAITING
         } else {
             plugin.severe("${gameMap.arena.name} could not be refreshed. Check its configurations.")
@@ -347,6 +424,7 @@ class GameManager(private val plugin: TDM) {
 
                         plugin.suspendFunctionSync {
                             player.teleport(plugin.spawn!!)
+                            plugin.scoreboardManager.removeBoards(player, gameMap)
                         }
 
                     }
@@ -366,10 +444,12 @@ class GameManager(private val plugin: TDM) {
 
                             if (it.team == team) {
 
+                                player.sendMessage(plugin.messages.youWon)
+
                                 plugin.config.winCommands.forEach {
                                     plugin.suspendFunctionSync {
                                         plugin.server.dispatchCommand(plugin.server.consoleSender, it.replace("%player%",
-                                            plugin.cacheManager.getPlayerName(player.name)))
+                                            plugin.cacheManager.getPlayerName(player.uniqueId.toString())))
                                     }
                                 }
 
@@ -385,7 +465,11 @@ class GameManager(private val plugin: TDM) {
 
                 }.invokeOnCompletion {
 
-                    refreshGameMap(gameMap)
+                    Scopes.supervisorScope.launch {
+                        plugin.suspendFunctionSync {
+                            refreshGameMap(gameMap)
+                        }
+                    }
 
                 }
 
@@ -395,13 +479,102 @@ class GameManager(private val plugin: TDM) {
 
     }
 
-    fun playerLeft(gamePlayer: GamePlayer, gameMap: GameMap) {
+    fun playerKilled(gamePlayer: GamePlayer, gameMap: GameMap) {
 
-        if (gameMap.inGamePlayers.contains(gamePlayer)) {
+        val player = getPlayer(gamePlayer)!!
 
-            gameMap.inGamePlayers.remove(gamePlayer)
+        gamePlayer.status = PlayerStatus.DEAD
+
+        Scopes.supervisorScope.launch {
+            plugin.suspendFunctionSync {
+
+                Utils.respawnPlayer(player)
+
+            }
+        }.invokeOnCompletion {
+            player.clearAllInventory()
+
+            Scopes.supervisorScope.launch {
+                plugin.suspendFunctionSync {
+                    player.teleport(gameMap.arena.spectatorSpawn!!)
+                }
+            }.invokeOnCompletion {
+                player.sendMessage(plugin.messages.spectating)
+            }
 
         }
+
+    }
+
+    fun playerLeft(gamePlayer: GamePlayer, gameMap: GameMap) {
+
+        if (!plugin.cacheManager.quitters.contains(gamePlayer.uuid))
+            plugin.cacheManager.quitters.add(gamePlayer.uuid)
+
+        plugin.scoreboardManager.removeBoards(getPlayer(gamePlayer)!!, gameMap)
+
+        val team = gamePlayer.team
+
+        println("eski alive players boyutu ${gameMap.getAlivePlayers(team).size}")
+
+        gamePlayer.status = PlayerStatus.DEAD
+
+        println("yenisi ${gameMap.getAlivePlayers(team).size}")
+
+        if (gameMap.getAlivePlayers(team).isEmpty()) {
+            if (team == Team.RED)
+                win(gameMap, Team.BLUE)
+            else
+                win(gameMap, Team.RED)
+
+        }
+
+    }
+
+    fun leaveLobby(player: Player, gameMap: GameMap) {
+
+        plugin.scoreboardManager.removeLobbyBoard(player, gameMap)
+
+        if (gameMap.lobbyPlayers.contains(player.uniqueId.toString()))
+            gameMap.lobbyPlayers.remove(player.uniqueId.toString())
+
+        player.teleport(plugin.spawn!!)
+
+        if (plugin.kitManager.playerKits.containsKey(player.uniqueId.toString()))
+            plugin.kitManager.giveKit(player,
+                plugin.kitManager.playerKits[player.uniqueId.toString()]!!)
+
+        plugin.scoreboardManager.updateLobby(gameMap)
+
+        //TODO: Lobby is complete, game test is now on.
+
+        //TODO: Lobby block breaking happens
+
+    }
+
+    fun isPlayerSpectating(player: Player): Boolean {
+
+        if (!playerInAnyGame(player)) return false
+
+        val gamePlayer = getGamePlayer(player)!!
+
+        return gamePlayer.status == PlayerStatus.SPECTATING
+
+    }
+
+    fun leaveGame(player: Player) {
+
+        player.gameMode = GameMode.SURVIVAL
+
+        val gameMap = getGameMap(player)!!
+
+        player.teleport(plugin.spawn!!)
+
+        if (plugin.kitManager.playerKits.containsKey(player.uniqueId.toString())) {
+            plugin.kitManager.giveKit(player, plugin.kitManager.playerKits[player.uniqueId.toString()]!!)
+        }
+
+        plugin.scoreboardManager.removeBoards(player, gameMap)
 
     }
 

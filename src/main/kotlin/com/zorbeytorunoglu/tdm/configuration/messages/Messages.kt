@@ -92,5 +92,22 @@ class Messages(config: Resource) {
     val lobbyFull = config.getString("lobby-full")!!.colorHex
     val alreadyInGame = config.getString("already-in-game")!!.colorHex
     val joined = config.getString("joined")!!.colorHex
+    val lobbyCountdown = config.getString("lobby-countdown")!!.colorHex
+    val creationStarted = config.getString("creation-started")!!.colorHex
+    val notInGame = config.getString("not-in-game")!!.colorHex
+    val leftLobby = config.getString("left-lobby")!!.colorHex
+    val help = config.getStringList("help")
+    val helpNoPerm = config.getString("help-no-perm")!!.colorHex
+    val red = config.getString("red")!!.colorHex
+    val blue = config.getString("blue")!!.colorHex
+    val spectating = config.getString("spectating")!!.colorHex
+    val leftGame = config.getString("left-game")!!.colorHex
+    val youWon = config.getString("you-won")!!.colorHex
+    val waitTime = config.getString("wait-time")!!.colorHex
+    val killed = config.getString("killed")!!.colorHex
+    val lobbyCommand = config.getString("lobby-command")!!.colorHex
+    val gameCommand = config.getString("game-command")!!.colorHex
+    val liveRemaining = config.getString("live-remaining")!!.colorHex
+    val diedLive = config.getString("died-live")!!.colorHex
 
 }

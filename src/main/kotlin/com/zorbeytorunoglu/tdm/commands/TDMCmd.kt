@@ -1,9 +1,6 @@
 package com.zorbeytorunoglu.tdm.commands
 
-import com.zorbeytorunoglu.kLib.extensions.clearAllInventory
-import com.zorbeytorunoglu.kLib.extensions.isAlphanumeric
-import com.zorbeytorunoglu.kLib.extensions.isHelmet
-import com.zorbeytorunoglu.kLib.extensions.isIntegerNumber
+import com.zorbeytorunoglu.kLib.extensions.*
 import com.zorbeytorunoglu.tdm.TDM
 import com.zorbeytorunoglu.tdm.arena.Arena
 import com.zorbeytorunoglu.tdm.arena.ArenaStatus
@@ -30,6 +27,28 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 
         if (command.name != "tdm") return false
+
+        if (args.isEmpty()) {
+            if (sender.hasPermission("tdm.help")) {
+                plugin.messages.help.forEach {
+                    sender.sendMessage(it.colorHex)
+                }
+            } else {
+                sender.sendMessage(plugin.messages.helpNoPerm)
+            }
+            return true
+        }
+
+        if (args[0] == "help") {
+            if (sender.hasPermission("tdm.help")) {
+                plugin.messages.help.forEach {
+                    sender.sendMessage(it.colorHex)
+                }
+            } else {
+                sender.sendMessage(plugin.messages.helpNoPerm)
+            }
+            return true
+        }
 
         if (args[0] == "create") {
 
@@ -58,6 +77,8 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
                 sender.sendMessage(plugin.messages.spawnNotSet)
                 return false
             }
+
+            sender.sendMessage(plugin.messages.creationStarted)
 
             val world = plugin.worldManager.createEmptyWorld(arenaName, World.Environment.NORMAL)
 
@@ -129,8 +150,9 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
 
             return if (plugin.worldManager.saveMap(arenaName)) {
                 plugin.arenaManager.saveMapConfig(arena)
-                plugin.arenaManager.gameMaps[arena] = GameMap(arena)
                 plugin.worldManager.loadWorld(arena.name, World.Environment.NORMAL)
+                arena.reloadLocations()
+                plugin.arenaManager.gameMaps[arena] = GameMap(arena)
                 sender.sendMessage(plugin.messages.mapSaved.replace("%map%", arenaName))
                 true
             } else {
@@ -868,23 +890,38 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
 
         }
 
-        if (args[0] == "test") {
+        if (args[0] == "leave") {
 
-            val arena = plugin.arenaManager.getArena(args[1])
+            if (!isPlayer(sender)) return false
+
+            if (!hasPermission(sender, "tdm.leave")) return false
 
             val player = sender as Player
 
-            player.clearAllInventory()
+            if (!plugin.gameManager.playerInAnyLobby(player) && !plugin.gameManager.playerInAnyGame(player)) {
 
-            player.inventory.contents = arena.redKit.contents
+                sender.sendMessage(plugin.messages.notInGame)
 
-            player.inventory.setArmorContents(arena.redKit.armors)
+                return false
 
-            player.inventory.setItemInOffHand(arena.redKit.offHand)
+            }
 
-            player.inventory.helmet = arena.redKit.helmet
+            val game = plugin.gameManager.getGameMap(player)
 
-            player.sendMessage("verdim")
+            if (game == null) {
+                sender.sendMessage(plugin.messages.notInGame)
+                return false
+            }
+
+            if (plugin.gameManager.playerInAnyLobby(player)) {
+                plugin.gameManager.leaveLobby(player, game)
+            }
+
+            if (plugin.gameManager.isPlayerSpectating(player)) {
+                plugin.gameManager.leaveGame(player)
+            }
+
+            sender.sendMessage(plugin.messages.leftGame)
 
             return true
 

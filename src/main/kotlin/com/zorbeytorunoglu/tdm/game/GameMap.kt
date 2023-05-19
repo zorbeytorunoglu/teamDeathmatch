@@ -3,9 +3,14 @@ package com.zorbeytorunoglu.tdm.game
 import com.zorbeytorunoglu.tdm.arena.Arena
 import com.zorbeytorunoglu.tdm.arena.ArenaStatus
 import com.zorbeytorunoglu.tdm.game.player.GamePlayer
+import com.zorbeytorunoglu.tdm.game.player.PlayerStatus
 import com.zorbeytorunoglu.tdm.game.player.Team
 import com.zorbeytorunoglu.tdm.scoreboard.FastBoard
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class GameMap(val arena: Arena) {
 
@@ -47,6 +52,61 @@ class GameMap(val arena: Arena) {
                 it.uuid == player.uniqueId.toString()
             }) Team.BLUE
         else Team.RED
+
+    }
+
+    fun getAlivePlayers(team: Team): List<GamePlayer> {
+
+        return inGamePlayers.filter {
+            it.team == team && it.status == PlayerStatus.PLAYING
+        }
+
+    }
+
+    fun getDeadPlayers(): List<GamePlayer> {
+        if (inGamePlayers.isEmpty()) return emptyList()
+        return inGamePlayers.filter {
+            it.status == PlayerStatus.DEAD
+        }
+    }
+
+    fun getAlivePlayers(): List<GamePlayer> {
+
+        if (inGamePlayers.isEmpty()) return emptyList()
+
+        return inGamePlayers.filter {
+            it.status == PlayerStatus.PLAYING
+        }
+
+    }
+
+    fun getEveryone(): List<String> {
+
+        val everyone = mutableListOf<String>()
+
+        if (getAlivePlayers().isNotEmpty())
+            getAlivePlayers().forEach { everyone.add(it.uuid) }
+
+        if (getDeadPlayers().isNotEmpty())
+            getDeadPlayers().forEach { everyone.add(it.uuid) }
+
+        if (spectators.isNotEmpty())
+            everyone.addAll(spectators)
+
+        return everyone.toList()
+
+    }
+
+    fun getEveryoneAsPlayer(): List<Player> {
+
+        val everyone = mutableListOf<Player>()
+
+        getEveryone().forEach {
+            val player = Bukkit.getServer().getPlayer(UUID.fromString(it))
+            if (player != null) everyone.add(player)
+        }
+
+        return everyone
 
     }
 

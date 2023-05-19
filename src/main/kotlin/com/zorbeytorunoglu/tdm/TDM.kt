@@ -10,7 +10,9 @@ import com.zorbeytorunoglu.tdm.configuration.Config
 import com.zorbeytorunoglu.tdm.configuration.messages.Messages
 import com.zorbeytorunoglu.tdm.game.GameManager
 import com.zorbeytorunoglu.tdm.inventory.KitManager
+import com.zorbeytorunoglu.tdm.listeners.GameListener
 import com.zorbeytorunoglu.tdm.listeners.GateSelection
+import com.zorbeytorunoglu.tdm.listeners.LobbyListener
 import com.zorbeytorunoglu.tdm.listeners.WorldInit
 import com.zorbeytorunoglu.tdm.scoreboard.ScoreboardManager
 import com.zorbeytorunoglu.tdm.world.WorldManager
@@ -56,10 +58,15 @@ class TDM: MCPlugin() {
         scoreboardManager = ScoreboardManager(this)
 
         TDMCmd(this)
+
         WorldInit(this)
+        GameListener(this)
+        LobbyListener(this)
         GateSelection(this)
 
         cacheManager.loadUUIDs()
+        cacheManager.loadQuitters()
+
         arenaManager.loadArenas()
 
     }
@@ -68,6 +75,8 @@ class TDM: MCPlugin() {
         super.onDisable()
 
         cacheManager.saveUUIDs()
+        cacheManager.saveQuitters()
+
         arenaManager.unloadArenas()
         kitManager.savePlayerKitsToResource()
 
