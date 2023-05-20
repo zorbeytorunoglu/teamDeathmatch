@@ -109,5 +109,6 @@ class Messages(config: Resource) {
     val gameCommand = config.getString("game-command")!!.colorHex
     val liveRemaining = config.getString("live-remaining")!!.colorHex
     val diedLive = config.getString("died-live")!!.colorHex
+    val cantLeave = config.getString("cant-leave")!!.colorHex
 
 }

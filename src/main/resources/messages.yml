@@ -100,6 +100,7 @@ lobby-command: '&e&lTDM &7You can not use that command in a lobby. &a/tdm leave 
 game-command: '&e&lTDM &7You can not use commands in a game.'
 live-remaining: '&e&lTDM &7You have &a%live% &7live left now.'
 died-live: '&e&lTDM &a%player% &7has &a%live% &7live left.'
+cant-leave: '&e&lTDM &7You can not leave in fight.'
 help-no-perm: '&e&lTDM &f/tdm join &a<arena> &7to join an arena.'
 help:
   - '&e&lTDM &7by &ethelegend &7for &exGohel'

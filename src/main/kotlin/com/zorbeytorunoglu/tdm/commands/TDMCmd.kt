@@ -915,13 +915,17 @@ class TDMCmd(private val plugin: TDM): CommandExecutor {
 
             if (plugin.gameManager.playerInAnyLobby(player)) {
                 plugin.gameManager.leaveLobby(player, game)
+                sender.sendMessage(plugin.messages.leftGame)
+                return true
             }
 
-            if (plugin.gameManager.isPlayerSpectating(player)) {
+            if (plugin.gameManager.isPlayerSpectating(player) || player.gameMode == GameMode.SPECTATOR) {
                 plugin.gameManager.leaveGame(player)
+                sender.sendMessage(plugin.messages.leftGame)
+                return true
             }
 
-            sender.sendMessage(plugin.messages.leftGame)
+            sender.sendMessage(plugin.messages.cantLeave)
 
             return true
 
