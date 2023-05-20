@@ -427,6 +427,14 @@ class GameManager(private val plugin: TDM) {
                             plugin.scoreboardManager.removeBoards(player, gameMap)
                         }
 
+                        plugin.suspendFunctionSync {
+                            player.clearAllInventory()
+                        }
+
+                        plugin.suspendFunctionSync {
+                            plugin.kitManager.restorePlayerInventory(player)
+                        }
+
                     }
 
                 }
@@ -515,11 +523,7 @@ class GameManager(private val plugin: TDM) {
 
         val team = gamePlayer.team
 
-        println("eski alive players boyutu ${gameMap.getAlivePlayers(team).size}")
-
         gamePlayer.status = PlayerStatus.DEAD
-
-        println("yenisi ${gameMap.getAlivePlayers(team).size}")
 
         if (gameMap.getAlivePlayers(team).isEmpty()) {
             if (team == Team.RED)
