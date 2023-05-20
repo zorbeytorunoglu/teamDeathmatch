@@ -9,3 +9,4 @@ lobbyCommandWhitelist:
   - '/tdm leave'
 gameCommandWhitelist:
   - '/msg'
+  - '/tdm leave'
