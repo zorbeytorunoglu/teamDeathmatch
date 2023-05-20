@@ -42,9 +42,11 @@ class GameListener(private val plugin: TDM): Listener {
                 if (it.startsWith(args[0])) whitelisted = true
             }
 
-            if (!whitelisted) event.isCancelled = true
-
-            event.player.sendMessage(plugin.messages.gameCommand)
+            if (!whitelisted) {
+                event.isCancelled = true
+                event.player.sendMessage(plugin.messages.gameCommand)
+                return
+            }
 
         }
 
@@ -93,7 +95,7 @@ class GameListener(private val plugin: TDM): Listener {
     @EventHandler
     fun onSuicide(event: PlayerDeathEvent) {
 
-        if (event.entity.killer == null) return
+        if (event.entity.killer != null) return
 
         val game = plugin.gameManager.getGameMapGamePlayer(event.entity.uniqueId.toString())
 
@@ -141,9 +143,21 @@ class GameListener(private val plugin: TDM): Listener {
 
         val live = gamePlayer.stats.live--
 
-        if (live <= 0) {
+        if (live <= 1) {
 
             gamePlayer.status = PlayerStatus.DEAD
+
+            if (gamePlayer.team == Team.RED) {
+                if (gameMap.getAlivePlayers(Team.RED).isEmpty()) {
+                    plugin.gameManager.win(gameMap, Team.BLUE)
+                    return
+                }
+            } else {
+                if (gameMap.getAlivePlayers(Team.BLUE).isEmpty()) {
+                    plugin.gameManager.win(gameMap, Team.RED)
+                    return
+                }
+            }
 
             Scopes.supervisorScope.launch {
 
