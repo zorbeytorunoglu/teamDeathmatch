@@ -19,6 +19,7 @@ class Arena(val name: String) {
     var playerLives: Int = 2
     var redKit: Kit = Kit(mutableListOf(), mutableListOf())
     var blueKit: Kit = Kit(mutableListOf(), mutableListOf())
+    var cooldown: Int = 0
 
     fun isSetup(): Boolean {
 
@@ -49,6 +50,19 @@ class Arena(val name: String) {
             spectatorSpawn = Location(
                 Bukkit.getServer().getWorld(spectatorSpawn!!.world!!.name), spectatorSpawn!!.x,
                 spectatorSpawn!!.y, spectatorSpawn!!.z, spectatorSpawn!!.yaw, spectatorSpawn!!.pitch)
+        }
+
+        if (gates.isNotEmpty()) {
+
+            val newList = arrayListOf<Location>()
+
+            gates.forEach {
+                newList.add(Location(Bukkit.getServer().getWorld(it.world!!.name),
+                    it.x, it.y, it.z, it.yaw, it.pitch))
+            }
+
+            gates = newList
+
         }
 
     }
