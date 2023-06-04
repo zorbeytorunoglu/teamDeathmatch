@@ -110,4 +110,17 @@ class GameMap(val arena: Arena) {
 
     }
 
+    fun getAlivePlayersAsPlayer(): List<Player> {
+
+        val everyone = mutableListOf<Player>()
+
+        getAlivePlayers().forEach {
+            val player = Bukkit.getServer().getPlayer(UUID.fromString(it.uuid))
+            if (player != null) everyone.add(player)
+        }
+
+        return everyone
+
+    }
+
 }
