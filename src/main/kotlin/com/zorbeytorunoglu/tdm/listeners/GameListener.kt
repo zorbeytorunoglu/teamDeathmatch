@@ -17,6 +17,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
@@ -25,7 +27,6 @@ class GameListener(private val plugin: TDM): Listener {
     init {
 
         plugin.registerEvents(this)
-        println("registered game listener")
 
     }
 
@@ -55,13 +56,9 @@ class GameListener(private val plugin: TDM): Listener {
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
 
-        println("player quit fired")
-
         val gamePair = plugin.gameManager.getGameMapGamePlayer(event.player.uniqueId.toString())
 
         if (gamePair.first != null) {
-
-            println("null degil, atesledim")
 
             plugin.gameManager.playerLeft(gamePair.second!!, gamePair.first!!)
 
@@ -118,7 +115,22 @@ class GameListener(private val plugin: TDM): Listener {
 
         val gamePlayer = plugin.gameManager.getGamePlayer(event.entity)!!
 
+        plugin.gameManager.getGamePlayer(event.entity.killer!!)!!.stats.kills++
+
+        plugin.scoreboardManager.updateGameBoard(event.entity.killer!!, gameMap)
+
         kill(gamePlayer, gameMap, event.entity)
+
+    }
+
+    @EventHandler
+    fun onArmorClick(event: InventoryClickEvent) {
+
+        if (event.inventory.type != InventoryType.PLAYER) return
+
+        if (event.slotType != InventoryType.SlotType.ARMOR) return
+
+        if (plugin.gameManager.playerInAnyGame(event.whoClicked as Player)) event.isCancelled = true
 
     }
 
